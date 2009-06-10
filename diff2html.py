@@ -20,6 +20,9 @@ HTMLHEADER = """<html>
             div.diff.chunk_header {
                 color: #990099
             }
+            div.diff.header {
+                color: #000088
+            }
         </style>
     </head>
     <body>
@@ -50,6 +53,8 @@ for line in inp:
         out.write('<div class="diff add">')
     elif line[0] == '@':
         out.write('<div class="diff chunk_header">')
+    elif line[0] == '=':
+        out.write('<div class="diff header">')
     else:
         out.write('<div class="diff">')
     out.write(line)
