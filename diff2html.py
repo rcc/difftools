@@ -2,6 +2,9 @@
 
 import sys
 
+def htmlfixup(s):
+    return s.replace('<','&lt;').replace('>','&gt;')
+
 HTMLHEADER = """<html>
     <head>
         <title>%s</title>
@@ -57,7 +60,7 @@ for line in inp:
         out.write('<div class="diff header">')
     else:
         out.write('<div class="diff">')
-    out.write(line)
+    out.write(htmlfixup(line))
     out.write('</div>\n')
 
 out.write(HTMLFOOTER)

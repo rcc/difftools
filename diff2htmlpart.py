@@ -2,6 +2,9 @@
 
 import sys
 
+def htmlfixup(s):
+    return s.replace('<','&lt;').replace('>','&gt;')
+
 ### ENTRY ###
 out = sys.stdout
 inp = sys.stdin
@@ -18,5 +21,5 @@ for line in inp:
         out.write('<div style="font-family: monospace; font-size: 12px; white-space: pre; color: #000088;">')
     else:
         out.write('<div style="font-family: monospace; font-size: 12px; white-space: pre; color: #000000;">')
-    out.write(line)
+    out.write(htmlfixup(line))
     out.write('</div>\n')
