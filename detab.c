@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 			i++;
 		}
 		linebuf2[j] = '\0';
-		printf("%s", linebuf2);
+		printf("%s\n", linebuf2);
 	}
 
 	return 0;
