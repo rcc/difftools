@@ -1,5 +1,5 @@
 /*
- * difftools.c - various diff formatting tools.
+ * getline.h
  *
  * Copyright (C) 2010 Robert C. Curtis
  *
@@ -16,33 +16,13 @@
  * You should have received a copy of the GNU General Public License
  * along with difftools.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <prjutil.h>
-#include <cmds.h>
 
 #include <stdio.h>
+#include <sys/types.h>
 
-int main(int argc, const char * argv[])
-{
-	int ret;
-	int status = 0;
+#ifndef I__GETLINE_H__
+	#define I__GETLINE_H__
 
-	pdebug("Version: %s\n", SCM_HASH);
+ssize_t getline(FILE *fp, char *buf, size_t bufsz);
 
-	if((ret = run_cmds(argc-1, &argv[1], NULL)) < 0) {
-		fprintf(stderr,
-			"An error occurred with command at position %d\n",
-			-ret);
-		status = -1;
-		goto exit;
-	}
-
-exit:
-	return status;
-}
-
-CMDHANDLER(version)
-{
-	printf("Version: %s\n", SCM_HASH);
-	return 0;
-}
-APPCMD(version, &version, "print the version", "usage: version", NULL);
+#endif /* I__GETLINE_H__ */

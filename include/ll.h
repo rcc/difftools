@@ -17,8 +17,6 @@
  * along with ll.h. If not, see <http://www.gnu.org/licenses/>.
  */
 
-/****************************************************************************/
-
 #include <prjutil.h>
 
 /* DESCRIPTION: This is a doubly-linked circular list implementation heavily

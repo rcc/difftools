@@ -5,6 +5,7 @@ TARGET := difftools
 SOURCES :=	src/difftools.c \
 		src/colorize.c \
 		src/detab.c \
+		lib/getline.c \
 		lib/cmds.c \
 
 # Libraries

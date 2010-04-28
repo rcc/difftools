@@ -1,5 +1,5 @@
 /*
- * difftools.c - various diff formatting tools.
+ * getline.c
  *
  * Copyright (C) 2010 Robert C. Curtis
  *
@@ -16,33 +16,39 @@
  * You should have received a copy of the GNU General Public License
  * along with difftools.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <prjutil.h>
-#include <cmds.h>
+#include <getline.h>
 
-#include <stdio.h>
-
-int main(int argc, const char * argv[])
+ssize_t getline(FILE *fp, char *buf, size_t bufsz)
 {
-	int ret;
-	int status = 0;
+	int have_cr = 0, have_lf = 0;
+	size_t i = 0;
+	int c;
 
-	pdebug("Version: %s\n", SCM_HASH);
-
-	if((ret = run_cmds(argc-1, &argv[1], NULL)) < 0) {
-		fprintf(stderr,
-			"An error occurred with command at position %d\n",
-			-ret);
-		status = -1;
-		goto exit;
+	while(((c = getc(fp)) != EOF) && (i < (bufsz - 1))) {
+		if(((char)c != '\n') && ((char)c != '\r')) {
+			if(have_cr || have_lf) {
+				ungetc(c, fp);
+				break;
+			} else {
+				buf[i++] = (char)c;
+			}
+		} else {
+			if((char)c == '\n') {
+				have_cr++;
+			} else if((char)c == '\r') {
+				have_lf++;
+			}
+			if((have_cr > 1) || (have_lf > 1)) {
+				ungetc(c, fp);
+				break;
+			}
+		}
 	}
 
-exit:
-	return status;
-}
+	buf[i] = '\0'; /* NULL Terminate */
 
-CMDHANDLER(version)
-{
-	printf("Version: %s\n", SCM_HASH);
-	return 0;
+	if((c == EOF) && !i && !have_cr && !have_lf)
+		return -1;
+
+	return (ssize_t)i;
 }
-APPCMD(version, &version, "print the version", "usage: version", NULL);
