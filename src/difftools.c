@@ -1,5 +1,5 @@
 /*
- * difftools.c - various diff formatting tools.
+ * difftools.c - various diff formatting tools
  *
  * Copyright (C) 2010 Robert C. Curtis
  *
@@ -26,45 +26,60 @@
 
 int main(int argc, const char * argv[])
 {
-	int ret;
 	int status = 0;
-	char *cmdname;
-	char *arg0;
+	int ret;
+	char *arg0, *cmdname;
 
-	/* create the command string */
+	/* create the command string with basename() */
 	if((arg0 = malloc(strlen(argv[0]))) == NULL) {
 		perror("Could not allocate arg0");
-		status = -1;
-		goto exit;
+		status = 1;
+		goto exit1;
 	}
 	strcpy(arg0, argv[0]);
 	if((cmdname = basename(arg0)) == NULL) {
 		perror("Could not get basename of command");
-		status = -1;
-		goto exit;
+		status = 1;
+		goto exit2;
 	}
 
 	pdebug("Command: %s\n", cmdname);
 	pdebug("Version: %s\n", SCM_HASH);
 
-	if(strcmp("difftools", cmdname) == 0) {
-		if((ret = run_cmds(argc-1, &argv[1], NULL)) < 0) {
-			fprintf(stderr,
-				"An error occurred with command at position "
-				"%d\n", -ret);
-			status = -1;
-			goto exit;
+	if(strcmp(__TARGET__, cmdname) == 0) {
+		if((ret = run_cmds(argc-1, &argv[1], NULL)) != 0) {
+			if(ret < 0) {
+				fprintf(stderr,
+					"An error occurred with command: %s\n",
+					argv[-ret]);
+			} else {
+				fprintf(stderr,
+					"Could not find command: %s\n",
+					argv[ret]);
+			}
+			status = 1;
+			goto exit2;
 		}
 	} else {
 		/* treat the argv[0] command name as a command */
-		status = run_cmd(cmdname, argc - 1, &argv[1], NULL);
-		if(status != 0)
-			fprintf(stderr,
-				"An error occurred with command: %s\n",
-				cmdname);
+		if((ret = run_cmd(cmdname, argc - 1, &argv[1], NULL)) != 0) {
+			if(ret < 0) {
+				fprintf(stderr,
+					"An error occurred with command: %s\n",
+					cmdname);
+			} else {
+				fprintf(stderr,
+					"Could not find command: %s\n",
+					cmdname);
+			}
+			status = 1;
+			goto exit2;
+		}
 	}
 
-exit:
+exit2:
+	free(arg0);
+exit1:
 	return status;
 }
 
