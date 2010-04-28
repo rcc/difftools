@@ -65,7 +65,7 @@ CMDHANDLER(colorize)
 
 	return 0;
 }
-APPCMD(colorize, &colorize,
+APPCMD(diffcolorize, &colorize,
 		"colorize diff formatted text",
 		"usage: diffcolorize\n"
 		"    Takes input from stdin. Outputs to stdout",
