@@ -1,5 +1,8 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <sys/types.h>
+
+#include <cmds.h>
 
 static FILE *inp;
 
@@ -7,7 +10,7 @@ static FILE *inp;
 static char linebuf1[LINEBUF_SIZE];
 static char linebuf2[LINEBUF_SIZE];
 
-static inline ssize_t getline(FILE *fp, char *buf, size_t bufsz)
+static ssize_t getline(FILE *fp, char *buf, size_t bufsz)
 {
 	int have_cr = 0, have_lf = 0;
 	size_t i = 0;
@@ -42,15 +45,19 @@ static inline ssize_t getline(FILE *fp, char *buf, size_t bufsz)
 	return (ssize_t)i;
 }
 
-int main(int argc, char *argv[])
+CMDHANDLER(detab)
 {
 	inp = stdin;
 	ssize_t l;
 	size_t i,j;
 	int tabstop = 4;
+	int ret = 0;
 
-	if(argc == 2) {
-		tabstop = atoi(argv[1]);
+	/* XXX put support for reading a file instead of stdin here */
+
+	if(argc == 1) {
+		ret = 1;
+		tabstop = atoi(argv[0]);
 		if(tabstop < 1 || tabstop > 80)
 			tabstop = 4;
 	}
@@ -75,3 +82,9 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+APPCMD(detab, &detab,
+		"expand tabs in text",
+		"usage: detab [tabstop]\n"
+		"    Takes input from stdin. Outputs to stdout.\n"
+		"    Tabstop is optional. Default is 4.",
+		NULL);

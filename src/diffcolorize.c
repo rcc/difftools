@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <sys/types.h>
 
+#include <cmds.h>
+
 #define COLOR_NO	"\x1b[00;00m"
 #define COLOR_BR 	"\x1b[00;01m"
 #define COLOR_RD 	"\x1b[00;31m"
@@ -15,7 +17,7 @@ static FILE *inp;
 #define LINEBUF_SIZE	2048
 static char linebuf[LINEBUF_SIZE];
 
-static inline ssize_t getline(FILE *fp, char *buf, size_t bufsz)
+static ssize_t getline(FILE *fp, char *buf, size_t bufsz)
 {
 	int have_cr = 0, have_lf = 0;
 	size_t i = 0;
@@ -50,10 +52,12 @@ static inline ssize_t getline(FILE *fp, char *buf, size_t bufsz)
 	return (ssize_t)i;
 }
 
-int main(int argc, char *argv[])
+CMDHANDLER(colorize)
 {
 	inp = stdin;
 	ssize_t l;
+
+	/* XXX put support for reading a file instead of stdin here */
 
 	while((l = getline(inp, linebuf, LINEBUF_SIZE)) >= 0) {
 		switch(linebuf[0]) {
@@ -77,3 +81,8 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+APPCMD(colorize, &colorize,
+		"colorize diff formatted text",
+		"usage: diffcolorize\n"
+		"    Takes input from stdin. Outputs to stdout",
+		NULL);

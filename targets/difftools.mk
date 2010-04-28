@@ -3,6 +3,8 @@ TARGET := difftools
 
 # Sources
 SOURCES :=	src/difftools.c \
+		src/diffcolorize.c \
+		src/detab.c \
 		lib/cmds.c \
 
 # Libraries
