@@ -26,6 +26,10 @@
 #ifndef I__CMDS_H__
 	#define I__CMDS_H__
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /* Command Data Structure */
 typedef struct cmd_t {
 	/* The name of the command */
@@ -79,6 +83,13 @@ typedef struct reg_cmd_t {
 
 #define THISCMD cmd->name
 
+/* Run Command[s] Error Handling
+ * 	run_cmd[s] will return 0 on success. A negative error code, -n, means
+ * 	that command number n encountered an error. A positive error code
+ * 	means that the cmds framework could not find command n.
+ * 	Note that 'command n' actually means argv[n].
+ */
+
 /* Run Commands
  * 	argc		- number of arguments in argv
  * 	argv		- list of commands and arguments
@@ -96,4 +107,7 @@ int run_cmd(const char *name, int argc, const char **argv, void *appdata);
 
 void _register_cmd(reg_cmd_t *rcmd);
 
+#ifdef __cplusplus
+}
+#endif
 #endif /* I__CMDS_H__ */
