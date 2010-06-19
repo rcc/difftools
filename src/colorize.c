@@ -22,14 +22,14 @@
 #include <cmds.h>
 #include <getline.h>
 
-#define COLOR_NO	"\x1b[00;00m"
-#define COLOR_BR 	"\x1b[00;01m"
-#define COLOR_RD 	"\x1b[00;31m"
-#define COLOR_GR 	"\x1b[00;32m"
-#define COLOR_YL 	"\x1b[00;33m"
-#define COLOR_BL 	"\x1b[00;34m"
-#define COLOR_MG 	"\x1b[00;35m"
-#define COLOR_CY 	"\x1b[00;36m"
+#define COLOR_NO	"\x1b[0m"
+#define COLOR_BR 	"\x1b[30m"
+#define COLOR_RD 	"\x1b[31m"
+#define COLOR_GR 	"\x1b[32m"
+#define COLOR_YL 	"\x1b[33m"
+#define COLOR_BL 	"\x1b[34m"
+#define COLOR_MG 	"\x1b[35m"
+#define COLOR_CY 	"\x1b[36m"
 
 static FILE *inp;
 
