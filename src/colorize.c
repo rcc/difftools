@@ -21,7 +21,6 @@
 #include <getline.h>
 
 #include <stdio.h>
-#include <sys/types.h>
 
 #define COLOR_NO	"\x1b[0m"
 #define COLOR_BR 	"\x1b[30m"
