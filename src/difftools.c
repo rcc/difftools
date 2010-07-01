@@ -1,5 +1,5 @@
 /*
- * difftools.c - various diff formatting tools
+ * difftools.c
  *
  * Copyright (C) 2010 Robert C. Curtis
  *
@@ -24,6 +24,11 @@
 #include <string.h>
 #include <libgen.h>
 
+/* appdata pointer */
+#ifndef APPDATA_POINTER
+#define APPDATA_POINTER		NULL
+#endif /* APPDATA_POINTER */
+
 int main(int argc, const char * argv[])
 {
 	int status = 0;
@@ -47,31 +52,17 @@ int main(int argc, const char * argv[])
 	pdebug("Version: %s\n", SCM_HASH);
 
 	if(strcmp(__TARGET__, cmdname) == 0) {
-		if((ret = run_cmds(argc-1, &argv[1], NULL)) != 0) {
-			if(ret < 0) {
-				fprintf(stderr,
-					"An error occurred with command: %s\n",
-					argv[-ret]);
-			} else {
-				fprintf(stderr,
-					"Could not find command: %s\n",
-					argv[ret]);
-			}
+		if(argc == 1) {
+			run_cmd("help", 0, &argv[1], APPDATA_POINTER);
+		} else if((ret = run_cmds(argc - 1, &argv[1],
+						APPDATA_POINTER)) != 0) {
 			status = 1;
 			goto exit2;
 		}
 	} else {
 		/* treat the argv[0] command name as a command */
-		if((ret = run_cmd(cmdname, argc - 1, &argv[1], NULL)) != 0) {
-			if(ret < 0) {
-				fprintf(stderr,
-					"An error occurred with command: %s\n",
-					cmdname);
-			} else {
-				fprintf(stderr,
-					"Could not find command: %s\n",
-					cmdname);
-			}
+		if((ret = run_cmd(cmdname, argc - 1, &argv[1],
+						APPDATA_POINTER)) != 0) {
 			status = 1;
 			goto exit2;
 		}

@@ -2,16 +2,46 @@ include buildsystem/func.mk
 
 # Set default flags
 CPPFLAGS := -Iinclude
-CFLAGS := -Wall -O2
+CFLAGS := -Wall -Werror -O2
 ASFLAGS :=
 LDFLAGS :=
 
 # include after default flags so config.mk can append to them
+#    first check for command line MKTARGET flag
 ifneq ($(MKTARGET),)
 include $(MKTARGET)
-else
+
+#    otherwise check for the presence of a linked target.mk
+else ifneq ($(strip $(wildcard target.mk)),)
 include target.mk
+
+#    otherwise build every target in targets/ directory
+else
+MKTARGETS=$(wildcard targets/*.mk)
 endif
+
+#
+# Verbose Option
+ifeq ($(VERBOSE),1)
+	Q :=
+else
+	Q := @
+endif
+
+
+ifdef MKTARGETS
+.PHONY : alltargets
+all_targets clean : $(MKTARGETS)
+	$(call OUTPUTINFO,DONE,$@)
+
+targets/% : FORCE
+	$(call OUTPUTINFO,TARGET,$@)
+	$(Q)$(MAKE) MKTARGET=$@ $(MAKECMDGOALS)
+	$(Q)echo
+
+FORCE:
+
+else
 
 # Add all the libraries defined in config.mk to LDLIBS
 LDLIBS := $(addprefix -l,$(LIBRARIES))
@@ -20,13 +50,6 @@ LDLIBS := $(addprefix -l,$(LIBRARIES))
 #   This is only for objective-C in OSX, but it doesn't hurt us here assuming
 #   no one defines FRAMEWORKS
 LDFLAGS += $(addprefix -framework ,$(FRAMEWORKS))
-
-# Verbose Option
-ifeq ($(VERBOSE),1)
-	Q :=
-else
-	Q := @
-endif
 
 # Configuration
 ifeq ($(words $(CONFIGS)),0)
@@ -39,6 +62,7 @@ ifeq ($(findstring $(CONFIG),$(CONFIGS)),)
 $(error Invalid config specified)
 endif
 OPTIONS += $($(call TOUPPER,$(CONFIG))_OPTIONS)
+SOURCES += $($(call TOUPPER,$(CONFIG))_SOURCES)
 
 # Machine Name and Tool Versions
 MACHINE := $(call USCORESUB,$(shell uname -sm))
@@ -70,7 +94,9 @@ $(BUILDDIR)/$(TARGET) : \
 ### Utility Rules ###
 .PHONY : clean
 clean :
-	-rm -rf buildresults
+	-rm -rf buildresults/$(TARGET)
 
 include buildsystem/autodep.mk
 include buildsystem/rules.mk
+
+endif # ifdef $(MKTARGETS)

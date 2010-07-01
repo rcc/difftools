@@ -3,13 +3,15 @@ TARGET := difftools
 
 # Sources
 SOURCES :=	src/difftools.c \
-		src/colorize.c \
-		src/detab.c \
 		lib/getline.c \
 		lib/cmds.c \
+		lib/cmds_script.c \
+		lib/cmds_shell.c \
+		src/colorize.c \
+		src/detab.c \
 
 # Libraries
-LIBRARIES :=
+LIBRARIES := readline
 
 # Options
 OPTIONS := SCM_HASH='"$(shell git rev-parse --short=16 HEAD || \
