@@ -108,3 +108,51 @@ APPCMD(file2htmlpart, &file2htmlpart,
 		"usage: file2htmlpart\n"
 		"    Takes input from stdin. Outputs to stdout.",
 		NULL);
+
+CMDHANDLER(diff2htmlpart)
+{
+	FILE *inp = stdin, *outp = stdout;
+	ssize_t l;
+
+	/* XXX put support for reading a file instead of stdin here */
+
+	while((l = getline(inp, APPDATA->linebuf1, LINEBUF_SIZE)) >= 0) {
+		if(l == 0) {
+			/* make empty lines just a space so the html
+			 * preserves them */
+			APPDATA->linebuf1[0] = ' ';
+			APPDATA->linebuf1[1] = '\0';
+			l = 1;
+		}
+		switch(APPDATA->linebuf1[0]) {
+			case '-':
+				fprintf(outp, HTML_LINE_PREFIX, COLOR_RD);
+				break;
+			case '+':
+				fprintf(outp, HTML_LINE_PREFIX, COLOR_GR);
+				break;
+			case '@':
+				fprintf(outp, HTML_LINE_PREFIX, COLOR_MG);
+				break;
+			case '=':
+				fprintf(outp, HTML_LINE_PREFIX, COLOR_CY);
+				break;
+			case ' ':
+				fprintf(outp, HTML_LINE_PREFIX, COLOR_NO);
+				break;
+			default:
+				fprintf(outp, HTML_LINE_PREFIX, COLOR_CY);
+		}
+		htmlfixup(APPDATA->linebuf1, l,
+				APPDATA->linebuf2, LINEBUF_SIZE);
+		fprintf(outp, "%s", APPDATA->linebuf2);
+		fprintf(outp, HTML_LINE_SUFFIX);
+	}
+
+	return 0;
+}
+APPCMD(diff2htmlpart, &diff2htmlpart,
+		"converts a unified diff into a chunk of html",
+		"usage: diff2htmlpart\n"
+		"    Takes input from stdin. Outputs to stdout.",
+		NULL);
