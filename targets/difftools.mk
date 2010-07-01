@@ -7,6 +7,7 @@ SOURCES :=	src/difftools.c \
 		lib/cmds.c \
 		src/colorize.c \
 		src/detab.c \
+		src/tohtml.c \
 
 # Libraries
 LIBRARIES := readline

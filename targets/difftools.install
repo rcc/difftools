@@ -23,6 +23,7 @@ cp "$BINARY" "${INSTALLDIR}/" || error_exit "Could not install binary"
 
 # create the symbolic links
 cd "$INSTALLDIR"
-for link in diffcolorize detab; do
+for link in diffcolorize detab file2htmlpart;
+do
     [ -e "$link" ] || ln -s "$BINARYNAME" "$link"
 done
