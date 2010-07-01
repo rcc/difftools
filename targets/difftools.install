@@ -18,9 +18,11 @@ if [ ! -d "$INSTALLDIR" ]; then
     error_exit "Install location does not exist: $INSTALLDIR"
 fi
 
+# copy the binary
 cp "$BINARY" "${INSTALLDIR}/" || error_exit "Could not install binary"
-cd "$INSTALLDIR"
 
+# create the symbolic links
+cd "$INSTALLDIR"
 for link in diffcolorize detab; do
     [ -e "$link" ] || ln -s "$BINARYNAME" "$link"
 done

@@ -16,22 +16,18 @@
  * You should have received a copy of the GNU General Public License
  * along with difftools.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "difftools.h"
+#include <cmds.h>
+#include <getline.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
 
-#include <cmds.h>
-#include <getline.h>
-
-static FILE *inp;
-
-#define LINEBUF_SIZE	2048
-static char linebuf1[LINEBUF_SIZE];
-static char linebuf2[LINEBUF_SIZE];
 
 CMDHANDLER(detab)
 {
-	inp = stdin;
+	FILE *inp = stdin, *outp = stdout;
 	ssize_t l;
 	size_t i,j;
 	int tabstop = 4;
@@ -46,22 +42,22 @@ CMDHANDLER(detab)
 			tabstop = 4;
 	}
 
-	while((l = getline(inp, linebuf1, LINEBUF_SIZE)) >= 0) {
+	while((l = getline(inp, APPDATA->linebuf1, LINEBUF_SIZE)) >= 0) {
 		i = 0;
 		j = 0;
-		while(linebuf1[i] && j < (LINEBUF_SIZE - 1)) {
-			if(linebuf1[i] == '\t') {
+		while(APPDATA->linebuf1[i] && j < (LINEBUF_SIZE - 1)) {
+			if(APPDATA->linebuf1[i] == '\t') {
 				size_t destj = (j + tabstop);
 				destj = destj - (destj % tabstop);
 				while(j < destj)
-					linebuf2[j++] = ' ';
+					APPDATA->linebuf2[j++] = ' ';
 			} else {
-				linebuf2[j++] = linebuf1[i];
+				APPDATA->linebuf2[j++] = APPDATA->linebuf1[i];
 			}
 			i++;
 		}
-		linebuf2[j] = '\0';
-		printf("%s\n", linebuf2);
+		APPDATA->linebuf2[j] = '\0';
+		fprintf(outp, "%s\n", APPDATA->linebuf2);
 	}
 
 	return 0;

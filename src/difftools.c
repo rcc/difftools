@@ -16,6 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with difftools.  If not, see <http://www.gnu.org/licenses/>.
  */
+#include "difftools.h"
 #include <prjutil.h>
 #include <cmds.h>
 
@@ -23,6 +24,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include <libgen.h>
+
+static struct difftools_priv apppriv;
+#define APPDATA_POINTER		(&apppriv)
 
 /* appdata pointer */
 #ifndef APPDATA_POINTER

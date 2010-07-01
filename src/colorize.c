@@ -16,11 +16,12 @@
  * You should have received a copy of the GNU General Public License
  * along with difftools.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include <stdio.h>
-#include <sys/types.h>
-
+#include "difftools.h"
 #include <cmds.h>
 #include <getline.h>
+
+#include <stdio.h>
+#include <sys/types.h>
 
 #define COLOR_NO	"\x1b[0m"
 #define COLOR_BR 	"\x1b[30m"
@@ -31,35 +32,39 @@
 #define COLOR_MG 	"\x1b[35m"
 #define COLOR_CY 	"\x1b[36m"
 
-static FILE *inp;
-
-#define LINEBUF_SIZE	2048
-static char linebuf[LINEBUF_SIZE];
 
 CMDHANDLER(colorize)
 {
-	inp = stdin;
+	FILE *inp = stdin, *outp = stdout;
 	ssize_t l;
 
 	/* XXX put support for reading a file instead of stdin here */
 
-	while((l = getline(inp, linebuf, LINEBUF_SIZE)) >= 0) {
-		switch(linebuf[0]) {
+	while((l = getline(inp, APPDATA->linebuf1, LINEBUF_SIZE)) >= 0) {
+		switch(APPDATA->linebuf1[0]) {
 			case '-':
-				printf(COLOR_RD "%s" COLOR_NO "\n", linebuf);
+				fprintf(outp, COLOR_RD "%s" COLOR_NO "\n",
+						APPDATA->linebuf1);
 				break;
 			case '+':
-				printf(COLOR_GR "%s" COLOR_NO "\n", linebuf);
+				fprintf(outp, COLOR_GR "%s" COLOR_NO "\n",
+						APPDATA->linebuf1);
 				break;
 			case '@':
-				printf(COLOR_MG "%s" COLOR_NO "\n", linebuf);
+				fprintf(outp, COLOR_MG "%s" COLOR_NO "\n",
+						APPDATA->linebuf1);
 				break;
 			case '=':
-				printf(COLOR_CY "%s" COLOR_NO "\n", linebuf);
+				fprintf(outp, COLOR_CY "%s" COLOR_NO "\n",
+						APPDATA->linebuf1);
+				break;
+			case ' ':
+				fprintf(outp, COLOR_NO "%s" COLOR_NO "\n",
+						APPDATA->linebuf1);
 				break;
 			default:
-				printf(COLOR_NO "%s" COLOR_NO "\n", linebuf);
-				break;
+				fprintf(outp, COLOR_CY "%s" COLOR_NO "\n",
+						APPDATA->linebuf1);
 		}
 	}
 
