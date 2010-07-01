@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# exit command
+error_exit () {
+    echo -e $* 1>&2
+    exit 1
+}
+
+BINARY=$1
+BINARYNAME=$(basename "$BINARY")
+INSTALLDIR=$(echo ~/bin)
+
+if [ ! -e "$BINARY" ]; then
+    error_exit "Binary does not exist"
+fi
+
+if [ ! -d "$INSTALLDIR" ]; then
+    error_exit "Install location does not exist: $INSTALLDIR"
+fi
+
+cp "$BINARY" "${INSTALLDIR}/" || error_exit "Could not install binary"
+cd "$INSTALLDIR"
+
+for link in diffcolorize detab; do
+    [ -e "$link" ] || ln -s "$BINARYNAME" "$link"
+done

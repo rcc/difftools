@@ -22,3 +22,6 @@ CONFIGS := release debug
 RELEASE_OPTIONS := CONFIG_RELEASE
 
 DEBUG_OPTIONS := CONFIG_DEBUG DEBUG_PRINTS
+
+# Install script
+INSTALL_SCRIPT := targets/difftools.install

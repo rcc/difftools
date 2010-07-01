@@ -31,7 +31,7 @@ endif
 
 ifdef MKTARGETS
 .PHONY : alltargets
-all_targets clean : $(MKTARGETS)
+all_targets clean install : $(MKTARGETS)
 	$(call OUTPUTINFO,DONE,$@)
 
 targets/% : FORCE
@@ -95,6 +95,11 @@ $(BUILDDIR)/$(TARGET) : \
 .PHONY : clean
 clean :
 	-rm -rf buildresults/$(TARGET)
+
+.PHONY : install
+install : $(BUILDDIR)/$(TARGET)
+	$(call OUTPUTINFO,INSTALL,$<)
+	$(Q)$(INSTALL_SCRIPT) $^
 
 include buildsystem/autodep.mk
 include buildsystem/rules.mk
