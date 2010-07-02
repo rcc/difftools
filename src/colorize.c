@@ -62,7 +62,7 @@ CMDHANDLER(colorize)
 						APPDATA->linebuf1);
 				break;
 			default:
-				fprintf(outp, COLOR_CY "%s" COLOR_NO "\n",
+				fprintf(outp, COLOR_YL "%s" COLOR_NO "\n",
 						APPDATA->linebuf1);
 		}
 	}
