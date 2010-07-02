@@ -135,7 +135,7 @@ CMDHANDLER(diff2htmlpart)
 				fprintf(outp, HTML_LINE_PREFIX, COLOR_MG);
 				break;
 			case '=':
-				fprintf(outp, HTML_LINE_PREFIX, COLOR_CY);
+				fprintf(outp, HTML_LINE_PREFIX, COLOR_BL);
 				break;
 			case ' ':
 				fprintf(outp, HTML_LINE_PREFIX, COLOR_NO);
