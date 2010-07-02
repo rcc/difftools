@@ -141,7 +141,7 @@ CMDHANDLER(diff2htmlpart)
 				fprintf(outp, HTML_LINE_PREFIX, COLOR_NO);
 				break;
 			default:
-				fprintf(outp, HTML_LINE_PREFIX, COLOR_CY);
+				fprintf(outp, HTML_LINE_PREFIX, COLOR_BL);
 		}
 		htmlfixup(APPDATA->linebuf1, l,
 				APPDATA->linebuf2, LINEBUF_SIZE);
@@ -155,4 +155,37 @@ APPCMD(diff2htmlpart, &diff2htmlpart,
 		"converts a unified diff into a chunk of html",
 		"usage: diff2htmlpart\n"
 		"    Takes input from stdin. Outputs to stdout.",
+		NULL);
+
+CMDHANDLER(htmlheader)
+{
+	FILE *outp = stdout;
+
+	if(argc < 1) {
+		pcmderr("must provide title\n");
+		return -1;
+	}
+
+	htmlfixup(argv[0], strlen(argv[0]), APPDATA->linebuf1, LINEBUF_SIZE);
+	fprintf(outp, "<html>\n<head><title>%s</title></head>\n<body>\n",
+			APPDATA->linebuf1);
+
+	return 1;
+}
+APPCMD(htmlheader, &htmlheader,
+		"outputs an html header",
+		"usage: htmlheader <title>",
+		NULL);
+
+CMDHANDLER(htmlfooter)
+{
+	FILE *outp = stdout;
+
+	fprintf(outp, "</body></html>\n");
+
+	return 0;
+}
+APPCMD(htmlfooter, &htmlfooter,
+		"outputs an html footer",
+		"usage: htmlfooter",
 		NULL);

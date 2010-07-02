@@ -34,7 +34,7 @@ CMDHANDLER(detab)
 
 	/* XXX put support for reading a file instead of stdin here */
 
-	if(argc == 1) {
+	if(argc >= 1) {
 		ret = 1;
 		tabstop = atoi(argv[0]);
 		if(tabstop < 1 || tabstop > 80)
