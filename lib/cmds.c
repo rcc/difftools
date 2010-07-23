@@ -29,9 +29,10 @@
 
 LIST_HEAD(registered_cmds);
 
-static const cmd_t *lookup_cmd(const char *name, ll_t *cmd_list)
+static const struct cmd *lookup_cmd(const char *name,
+		struct list_head *cmd_list)
 {
-	reg_cmd_t *pos;
+	struct cmd_mgr *pos;
 
 	list_for_each_entry(pos, cmd_list, node) {
 		if(strcmp(name, pos->cmd->name) == 0)
@@ -64,13 +65,14 @@ int run_cmds(int argc, const char **argv, void *appdata)
 
 	/* loop over all argv entries */
 	while(carg < argc) {
-		const cmd_t *cmd_entry =
+		const struct cmd *cmd_entry =
 			lookup_cmd(argv[carg++], &registered_cmds);
 		if(cmd_entry == NULL) {
-			printe("ERROR: could not find command '%s'\n",
+			logerror("ERROR: could not find command '%s'\n",
 					argv[carg-1]);
 			return -ENOSYS;
 		}
+		logverbose("running command: %s\n", cmd_entry->name);
 
 		/* call the command handler */
 		if((ret = (cmd_entry->handler)(argc-carg, &argv[carg],
@@ -84,11 +86,13 @@ int run_cmds(int argc, const char **argv, void *appdata)
 
 int run_cmd(const char *name, int argc, const char **argv, void *appdata)
 {
-	const cmd_t *cmd_entry = lookup_cmd(name, &registered_cmds);
+	const struct cmd *cmd_entry = lookup_cmd(name, &registered_cmds);
 	if(cmd_entry == NULL) {
-		printe("ERROR: could not find command '%s'\n", name);
+		logerror("ERROR: could not find command '%s'\n", name);
 		return -ENOSYS;
 	}
+
+	logverbose("running command: %s\n", cmd_entry->name);
 
 	/* call the command handler */
 	if((cmd_entry->handler)(argc, argv, cmd_entry, appdata) < 0)
@@ -105,12 +109,12 @@ int run_cmd_line(const char *cmd_line, void *appdata)
 	char **argv;
 
 	if((s = malloc(strlen(cmd_line))) == NULL) {
-		perror("ERROR: could not allocate command line buffer");
+		logerror("ERROR: could not allocate command line buffer");
 		status = -ENOMEM;
 		goto exit1;
 	}
 	if((argv = malloc(CMDS_MAX_ARGUMENTS * sizeof(argv[0]))) == NULL) {
-		perror("ERROR: could not allocate argv");
+		logerror("ERROR: could not allocate argv");
 		status = -ENOMEM;
 		goto exit2;
 	}
@@ -122,7 +126,7 @@ int run_cmd_line(const char *cmd_line, void *appdata)
 		status = run_cmd(argv[0], argc - 1, (const char **)&argv[1],
 				appdata);
 	} else {
-		printe("ERROR: command line empty\n");
+		logerror("ERROR: command line empty\n");
 		status = -EINVAL;
 	}
 
@@ -133,9 +137,9 @@ exit1:
 	return status;
 }
 
-void _register_cmd(reg_cmd_t *rcmd)
+void _register_cmd(struct cmd_mgr *rcmd)
 {
-	reg_cmd_t *pos;
+	struct cmd_mgr *pos;
 
 	/* add command in alphabetical order */
 	list_for_each_entry(pos, &registered_cmds, node) {
@@ -150,7 +154,8 @@ void _register_cmd(reg_cmd_t *rcmd)
 CMDHANDLER(help)
 {
 	if(argc > 0) {
-		const cmd_t *cmd_entry = lookup_cmd(argv[0], &registered_cmds);
+		const struct cmd *cmd_entry = lookup_cmd(argv[0],
+				&registered_cmds);
 		if(cmd_entry == NULL) {
 			pcmderr("command `%s' not found.\n", argv[0]);
 			return -1;
@@ -158,7 +163,7 @@ CMDHANDLER(help)
 		printf("Help for `%s' command:\n", cmd_entry->name);
 		printf("%s\n", cmd_entry->help);
 	} else {
-		reg_cmd_t *pos;
+		struct cmd_mgr *pos;
 		int j;
 
 		printf("Commands:\n");

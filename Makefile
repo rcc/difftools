@@ -1,7 +1,7 @@
 include buildsystem/func.mk
 
 # Set default flags
-CPPFLAGS := -Iinclude
+CPPFLAGS := -Iinclude -Isrc
 CFLAGS := -Wall -Werror -O2
 ASFLAGS :=
 LDFLAGS :=
@@ -20,7 +20,7 @@ else
 MKTARGETS=$(wildcard targets/*.mk)
 endif
 
-#
+
 # Verbose Option
 ifeq ($(VERBOSE),1)
 	Q :=
@@ -28,6 +28,8 @@ else
 	Q := @
 endif
 
+# Default Install Script
+INSTALL_SCRIPT = targets/$(TARGET).install
 
 ifdef MKTARGETS
 .PHONY : alltargets
@@ -99,7 +101,7 @@ clean :
 .PHONY : install
 install : $(BUILDDIR)/$(TARGET)
 	$(call OUTPUTINFO,INSTALL,$<)
-	$(Q)$(INSTALL_SCRIPT) $^
+	$(Q)$(INSTALL_SCRIPT) $<
 
 include buildsystem/autodep.mk
 include buildsystem/rules.mk
