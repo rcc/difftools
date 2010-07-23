@@ -8,7 +8,7 @@ error_exit () {
 
 BINARY=$1
 BINARYNAME=$(basename "$BINARY")
-INSTALLDIR=$(echo ~/bin)
+INSTALLDIR=${HOME}/bin
 
 if [ ! -e "$BINARY" ]; then
     error_exit "Binary does not exist"

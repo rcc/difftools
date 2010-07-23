@@ -1,3 +1,0 @@
-#!/bin/bash
-
-echo "<stub install script>" $0 $(basename "$1")

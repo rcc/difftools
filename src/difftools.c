@@ -18,6 +18,7 @@
  */
 #include "difftools.h"
 #include <prjutil.h>
+#include <logging.h>
 #include <cmds.h>
 
 #include <stdio.h>
@@ -25,48 +26,51 @@
 #include <string.h>
 #include <libgen.h>
 
-static struct difftools_priv apppriv;
-#define APPDATA_POINTER		(&apppriv)
+/* application's data structure */
+static struct appdata_priv apppriv;
+static void init_appdata_priv(struct appdata_priv *priv);
 
-/* appdata pointer */
-#ifndef APPDATA_POINTER
-#define APPDATA_POINTER		NULL
-#endif /* APPDATA_POINTER */
+/* command strings that get run if program given no arguments */
+const char *default_cmds[] = {
+	"version",
+	"help",
+};
 
 int main(int argc, const char * argv[])
 {
 	int status = 0;
-	int ret;
 	char *arg0, *cmdname;
 
 	/* create the command string with basename() */
 	if((arg0 = malloc(strlen(argv[0]))) == NULL) {
-		perror("Could not allocate arg0");
+		logerror("Could not allocate arg0");
 		status = 1;
 		goto exit1;
 	}
 	strcpy(arg0, argv[0]);
 	if((cmdname = basename(arg0)) == NULL) {
-		perror("Could not get basename of command");
+		logerror("Could not get basename of command");
 		status = 1;
 		goto exit2;
 	}
 
-	pdebug("Command: %s\n", cmdname);
-	pdebug("Version: %s\n", SCM_HASH);
+	logverbose("Command: %s\n", cmdname);
+
+	init_appdata_priv(&apppriv);
 
 	if(strcmp(__TARGET__, cmdname) == 0) {
 		if(argc == 1) {
-			run_cmd("help", 0, &argv[1], APPDATA_POINTER);
-		} else if((ret = run_cmds(argc - 1, &argv[1],
-						APPDATA_POINTER)) != 0) {
+			int i;
+			for(i = 0; i < ARRAY_SIZE(default_cmds); i++) {
+				run_cmd_line(default_cmds[i], &apppriv);
+			}
+		} else if(run_cmds(argc - 1, &argv[1], &apppriv) != 0) {
 			status = 1;
 			goto exit2;
 		}
 	} else {
 		/* treat the argv[0] command name as a command */
-		if((ret = run_cmd(cmdname, argc - 1, &argv[1],
-						APPDATA_POINTER)) != 0) {
+		if(run_cmd(cmdname, argc - 1, &argv[1], &apppriv) != 0) {
 			status = 1;
 			goto exit2;
 		}
@@ -78,9 +82,14 @@ exit1:
 	return status;
 }
 
+static void init_appdata_priv(struct appdata_priv *priv)
+{
+	logverbose("initializing application data: %p\n", priv);
+}
+
 CMDHANDLER(version)
 {
-	printf("Version: %s\n", SCM_HASH);
+	printf("Version:  %s\n", VERSION);
 	return 0;
 }
 APPCMD(version, &version, "print the version", "usage: version", NULL);
