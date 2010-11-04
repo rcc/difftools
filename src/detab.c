@@ -41,7 +41,7 @@ CMDHANDLER(detab)
 			tabstop = 4;
 	}
 
-	while((l = getline(inp, APPDATA->linebuf1, LINEBUF_SIZE)) >= 0) {
+	while((l = fgetline(inp, APPDATA->linebuf1, LINEBUF_SIZE)) >= 0) {
 		i = 0;
 		j = 0;
 		while(APPDATA->linebuf1[i] && j < (LINEBUF_SIZE - 1)) {

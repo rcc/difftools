@@ -86,7 +86,7 @@ CMDHANDLER(file2htmlpart)
 
 	/* XXX put support for reading a file instead of stdin here */
 
-	while((l = getline(inp, APPDATA->linebuf1, LINEBUF_SIZE)) >= 0) {
+	while((l = fgetline(inp, APPDATA->linebuf1, LINEBUF_SIZE)) >= 0) {
 		if(l == 0) {
 			/* make empty lines just a space so the html
 			 * preserves them */
@@ -116,7 +116,7 @@ CMDHANDLER(diff2htmlpart)
 
 	/* XXX put support for reading a file instead of stdin here */
 
-	while((l = getline(inp, APPDATA->linebuf1, LINEBUF_SIZE)) >= 0) {
+	while((l = fgetline(inp, APPDATA->linebuf1, LINEBUF_SIZE)) >= 0) {
 		if(l == 0) {
 			/* make empty lines just a space so the html
 			 * preserves them */

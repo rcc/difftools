@@ -39,7 +39,7 @@ CMDHANDLER(colorize)
 
 	/* XXX put support for reading a file instead of stdin here */
 
-	while((l = getline(inp, APPDATA->linebuf1, LINEBUF_SIZE)) >= 0) {
+	while((l = fgetline(inp, APPDATA->linebuf1, LINEBUF_SIZE)) >= 0) {
 		switch(APPDATA->linebuf1[0]) {
 			case '-':
 				fprintf(outp, COLOR_RD "%s" COLOR_NO "\n",

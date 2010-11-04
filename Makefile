@@ -3,6 +3,7 @@ include buildsystem/func.mk
 # Set default flags
 CPPFLAGS := -Iinclude -Isrc
 CFLAGS := -Wall -Werror -O2
+CXXFLAGS := $(CFLAGS)
 ASFLAGS :=
 LDFLAGS :=
 
@@ -23,10 +24,13 @@ endif
 
 # Verbose Option
 ifeq ($(VERBOSE),1)
-	Q :=
+export Q :=
+export VERBOSE := 1
 else
-	Q := @
+export Q := @
+export VERBOSE := 0
 endif
+
 
 # Default Install Script
 INSTALL_SCRIPT = targets/$(TARGET).install
