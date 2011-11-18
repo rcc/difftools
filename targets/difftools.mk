@@ -4,16 +4,17 @@ CONFIGS := debug release
 SOURCES :=	src/main.c \
 		src/prepost.c \
 		lib/logging.c \
-		lib/getline.c \
 		lib/dict.c \
 		lib/cmds.c \
-		src/colorize.c \
-		src/detab.c \
-		src/tohtml.c \
+		lib/getline.c \
+
+SOURCES +=	src/cmds/colorize.c \
+		src/cmds/detab.c \
+		src/cmds/tohtml.c \
 		src/cmds/version.c \
 
 # Libraries
-LIBRARIES := readline
+LIBRARIES :=
 
 # Version
 include buildsystem/git.mk
