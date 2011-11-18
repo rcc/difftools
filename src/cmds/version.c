@@ -31,34 +31,33 @@
  * official policies, either expressed or implied, of Robert C. Curtis.
  */
 
-#include <getline.h>
+#include <cmds.h>
+#include <stdio.h>
 
-ssize_t fgetline(FILE *fp, char *buf, size_t bufsz)
+CMDHANDLER(version)
 {
-	size_t i = 0;
-	int c;
+	int args = 0;
 
-	while(((c = getc(fp)) != EOF) && (i < (bufsz - 1))) {
-		if(((char)c != '\n') && ((char)c != '\r')) {
-			buf[i++] = (char)c;
-		} else {
-			/* check for a matching pair */
-			if((char)c == '\n') {
-				if((char)(c = getc(fp)) != '\r')
-					ungetc(c, fp);
-			} else if((char)c == '\r') {
-				if((char)(c = getc(fp)) != '\n')
-					ungetc(c, fp);
-			}
-			break;
-		}
+	if(dict_has_key(opts, "date")) {
+		printf("Build Date: %s\n", BUILD_DATE);
+		printf("Version:    ");
+	} else if(dict_has_key(opts, "pretty")) {
+		printf("Version: ");
+	}
+	if(dict_has_key(opts, "branch")) {
+		printf("%s (%s)\n", SCMVERSION, SCMBRANCH);
+	} else {
+		printf("%s\n", SCMVERSION);
 	}
 
-	buf[i] = '\0'; /* NULL Terminate */
-
-	/* if its the end of the file, and there was no line, return -1 */
-	if((c == EOF) && !i)
-		return -1;
-
-	return (ssize_t)i;
+	return args;
 }
+
+START_CMD_OPTS(version_opts)
+	CMD_OPT(pretty, 'p', "pretty", "print version with context")
+	CMD_OPT(date,   'd', "date",   "print build date")
+	CMD_OPT(branch, 'b', "branch", "show the SCM branch")
+END_CMD_OPTS;
+
+APPCMD_OPT(version, &version, "print the version", "usage: version", NULL,
+		version_opts);

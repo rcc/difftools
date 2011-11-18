@@ -31,34 +31,23 @@
  * official policies, either expressed or implied, of Robert C. Curtis.
  */
 
-#include <getline.h>
+#include "app.h"
+#include <prjutil.h>
 
-ssize_t fgetline(FILE *fp, char *buf, size_t bufsz)
-{
-	size_t i = 0;
-	int c;
+/*
+ * Pre-command Functions
+ * 	These functions get run before any commands are processed. They should
+ * 	return 0 on success.
+ */
+int (*precmdfuncs[])(struct appdata_priv *priv) = {
+	NULL
+};
 
-	while(((c = getc(fp)) != EOF) && (i < (bufsz - 1))) {
-		if(((char)c != '\n') && ((char)c != '\r')) {
-			buf[i++] = (char)c;
-		} else {
-			/* check for a matching pair */
-			if((char)c == '\n') {
-				if((char)(c = getc(fp)) != '\r')
-					ungetc(c, fp);
-			} else if((char)c == '\r') {
-				if((char)(c = getc(fp)) != '\n')
-					ungetc(c, fp);
-			}
-			break;
-		}
-	}
-
-	buf[i] = '\0'; /* NULL Terminate */
-
-	/* if its the end of the file, and there was no line, return -1 */
-	if((c == EOF) && !i)
-		return -1;
-
-	return (ssize_t)i;
-}
+/*
+ * Post-command Functions
+ * 	These functions get run after all commands are processed. They should
+ * 	return 0 on success.
+ */
+int (*postcmdfuncs[])(struct appdata_priv *priv) = {
+	NULL
+};

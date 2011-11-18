@@ -1,21 +1,40 @@
 /*
- * cmds.c - Modular Command Support.
+ * Copyright 2011 Robert C. Curtis. All rights reserved.
  *
- * Copyright (C) 2008 Robert C. Curtis
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions
+ * are met:
  *
- * cmds is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 2 of the License, or
- * (at your option) any later version.
+ *    1. Redistributions of source code must retain the above copyright
+ *       notice, this list of conditions and the following disclaimer.
  *
- * cmds is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ *    2. Redistributions in binary form must reproduce the above
+ *       copyright notice, this list of conditions and the following
+ *       disclaimer in the documentation and/or other materials
+ *       provided with the distribution.
  *
- * You should have received a copy of the GNU General Public License
- * along with cmds.  If not, see <http://www.gnu.org/licenses/>.
+ * THIS SOFTWARE IS PROVIDED BY ROBERT C. CURTIS ``AS IS'' AND ANY
+ * EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+ * PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL ROBERT C. CURTIS OR
+ * CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
+ * EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+ * PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY
+ * OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE
+ * USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
+ * DAMAGE.
+ *
+ * The views and conclusions contained in the software and documentation
+ * are those of the authors and should not be interpreted as representing
+ * official policies, either expressed or implied, of Robert C. Curtis.
  */
+
+/*
+ * cmds.c - Modular Command Support.
+ */
+
 #include <cmds.h>
 #include <prjutil.h>
 #include <stdio.h>
@@ -58,27 +77,151 @@ static int tokenize_cmd_string(char *argstr, char **argv, size_t max_args)
 	return (int)i;
 }
 
+static const struct cmd_opt *findlongopt(const struct cmd *cmd_entry,
+		const char *longopt)
+{
+	const struct cmd_opt *o;
+
+	if(cmd_entry->options == NULL)
+		return NULL;
+
+	for(o = cmd_entry->options; o->name != NULL; o++) {
+		if(o->longopt && (strcmp(o->longopt, &longopt[2]) == 0))
+			return o;
+	}
+
+	return NULL;
+}
+
+static const struct cmd_opt *findshortopt(const struct cmd *cmd_entry,
+		char shortopt)
+{
+	const struct cmd_opt *o;
+
+	if(cmd_entry->options == NULL)
+		return NULL;
+
+	for(o = cmd_entry->options; o->name != NULL; o++) {
+		if(o->shortopt == shortopt)
+			return o;
+	}
+
+	return NULL;
+}
+
+static inline void addopt(const struct cmd_opt *opt, struct dictionary *optdict,
+		const char *val)
+{
+	size_t val_len = val ? (strlen(val) + 1) : 0;
+	dict_add_key(optdict, opt->name, val, val_len);
+}
+
+static void handle_longopt(const struct cmd *cmd_entry, struct dictionary *od,
+		int argc, const char **argv, unsigned int *carg)
+{
+	const struct cmd_opt *opt;
+	char *optstr = strdup(argv[*carg]);
+	char *val = NULL;
+	int i;
+
+	if(optstr == NULL) {
+		logerror("%s\n", strerror(errno));
+		return;
+	}
+
+	/* Look for an = sign to separate opt from value */
+	for(i = 0; i < strlen(optstr); i++) {
+		if(optstr[i] == '=') {
+			optstr[i] = '\0';
+			val = &optstr[i + 1];
+			break;
+		}
+	}
+
+	if((opt = findlongopt(cmd_entry, optstr)) == NULL) {
+		logwarn("`%s' doesn not take '%s' option\n", cmd_entry->name,
+				optstr);
+	} else {
+		addopt(opt, od, val);
+	}
+
+	free(optstr);
+}
+
+static void handle_shortopt(const struct cmd *cmd_entry, struct dictionary *od,
+		int argc, const char **argv, unsigned int *carg)
+{
+	const struct cmd_opt *opt;
+	int i;
+
+	for(i = 1; i < strlen(argv[*carg]); i++) {
+		if((opt = findshortopt(cmd_entry, argv[*carg][i])) == NULL) {
+			logwarn("`%s' doesn not take '-%c' option\n",
+					cmd_entry->name, argv[*carg][i]);
+		} else {
+			addopt(opt, od, NULL);
+		}
+	}
+}
+
+static struct dictionary *cmd_getopt(const struct cmd *cmd_entry,
+		int argc, const char **argv, unsigned int *carg)
+{
+	struct dictionary *od;
+
+	if((od = new_dict()) == NULL) {
+		return NULL;
+	}
+
+	for(;(*carg < argc) && argv[*carg][0] == '-'; (*carg)++) {
+		if(strlen(argv[*carg]) < 2) {
+			/* A single - is most likely an argument denoting
+			 * 'stdin'. We should stop processing opts.
+			 */
+			logverbose("single -, stopping\n");
+			break;
+		}
+		logverbose("opt: %s, carg = %d\n", argv[*carg], *carg);
+		if(argv[*carg][1] == '-') {
+			/* Handle Long Opt */
+			handle_longopt(cmd_entry, od, argc, argv, carg);
+		} else {
+			/* Handle Short Opts */
+			handle_shortopt(cmd_entry, od, argc, argv, carg);
+		}
+	}
+
+	return od;
+}
+
 int run_cmds(int argc, const char **argv, void *appdata)
 {
 	unsigned int carg = 0;
 	int ret = 0;
+	struct dictionary *opts;
 
 	/* loop over all argv entries */
 	while(carg < argc) {
 		const struct cmd *cmd_entry =
 			lookup_cmd(argv[carg++], &registered_cmds);
 		if(cmd_entry == NULL) {
-			logerror("ERROR: could not find command '%s'\n",
+			logerror("could not find command '%s'\n",
 					argv[carg-1]);
 			return -ENOSYS;
 		}
 		logverbose("running command: %s\n", cmd_entry->name);
 
+		if((opts = cmd_getopt(cmd_entry, argc, argv, &carg)) == NULL) {
+			logerror("could not create option dictionary\n");
+			return -ENOMEM;
+		}
+
 		/* call the command handler */
 		if((ret = (cmd_entry->handler)(argc-carg, &argv[carg],
-						cmd_entry, appdata)) < 0)
+						cmd_entry, appdata, opts)) < 0)
 			return carg;
 		carg += ret;
+		delete_dict(opts);
 	}
 
 	return 0;
@@ -86,17 +229,28 @@ int run_cmds(int argc, const char **argv, void *appdata)
 
 int run_cmd(const char *name, int argc, const char **argv, void *appdata)
 {
+	struct dictionary *opts;
+	unsigned int carg = 0;
 	const struct cmd *cmd_entry = lookup_cmd(name, &registered_cmds);
 	if(cmd_entry == NULL) {
-		logerror("ERROR: could not find command '%s'\n", name);
+		logerror("could not find command '%s'\n", name);
 		return -ENOSYS;
 	}
 
 	logverbose("running command: %s\n", cmd_entry->name);
 
+	if((opts = cmd_getopt(cmd_entry, argc, argv, &carg)) == NULL) {
+		logerror("could not create option dictionary\n");
+		return -ENOMEM;
+	}
+
 	/* call the command handler */
-	if((cmd_entry->handler)(argc, argv, cmd_entry, appdata) < 0)
+	if((cmd_entry->handler)(argc-carg, &argv[carg], cmd_entry, appdata,
+				opts) < 0) {
+		delete_dict(opts);
 		return 1;
+	}
+	delete_dict(opts);
 
 	return 0;
 }
@@ -109,12 +263,12 @@ int run_cmd_line(const char *cmd_line, void *appdata)
 	char **argv;
 
 	if((s = malloc(strlen(cmd_line) + 1)) == NULL) {
-		logerror("ERROR: could not allocate command line buffer");
+		logerror("could not allocate command line buffer");
 		status = -ENOMEM;
 		goto exit1;
 	}
 	if((argv = malloc(CMDS_MAX_ARGUMENTS * sizeof(argv[0]))) == NULL) {
-		logerror("ERROR: could not allocate argv");
+		logerror("could not allocate argv");
 		status = -ENOMEM;
 		goto exit2;
 	}
@@ -126,7 +280,7 @@ int run_cmd_line(const char *cmd_line, void *appdata)
 		status = run_cmd(argv[0], argc - 1, (const char **)&argv[1],
 				appdata);
 	} else {
-		logerror("ERROR: command line empty\n");
+		logerror("command line empty\n");
 		status = -EINVAL;
 	}
 
@@ -154,6 +308,7 @@ void _register_cmd(struct cmd_mgr *rcmd)
 CMDHANDLER(help)
 {
 	if(argc > 0) {
+		const struct cmd_opt *o;
 		const struct cmd *cmd_entry = lookup_cmd(argv[0],
 				&registered_cmds);
 		if(cmd_entry == NULL) {
@@ -162,6 +317,23 @@ CMDHANDLER(help)
 		}
 		printf("Help for `%s' command:\n", cmd_entry->name);
 		printf("%s\n", cmd_entry->help);
+		if(cmd_entry->options) {
+		printf("OPTIONS:\n");
+			for(o = cmd_entry->options; o->name != NULL; o++) {
+				printf("  ");
+				if(o->shortopt && o->longopt)
+					printf("-%c, --%-13s",
+							o->shortopt,
+							o->longopt);
+				else if(o->shortopt)
+					printf("-%c                 ",
+							o->shortopt);
+				else if(o->longopt)
+					printf("--%-17s", o->longopt);
+				printf("  %s\n", o->description);
+			}
+		}
+
 	} else {
 		struct cmd_mgr *pos;
 		int j;
@@ -174,7 +346,7 @@ CMDHANDLER(help)
 				printf(" ");
 			printf("%s\n", pos->cmd->summary);
 		}
-		
+
 	}
 	return argc;
 }

@@ -31,84 +31,59 @@
  * official policies, either expressed or implied, of Robert C. Curtis.
  */
 
-#include <stdio.h>
-#include <prjutil.h>
+/*
+ * matrix.h - Matrix and Vector Math
+ */
 
-#ifndef I__LOGGING_H__
-	#define I__LOGGING_H__
+#include <stdint.h>
 
-#define LOGLEVEL_NONE		0
-#define LOGLEVEL_ERROR		1
-#define LOGLEVEL_WARNING	2
-#define LOGLEVEL_INFO		3
-#define LOGLEVEL_DEBUG		4
-#define LOGLEVEL_VERBOSE	5
-
-#ifndef MAX_LOGLEVEL
-#define MAX_LOGLEVEL		LOGLEVEL_VERBOSE
-#endif /* MAX_LOGLEVEL */
-
-#ifndef DEFAULT_LOGLEVEL
-#define DEFAULT_LOGLEVEL	LOGLEVEL_WARNING
-#endif /* DEFAULT_LOGLEVEL */
-
-
-/* LOGERROR */
-#if MAX_LOGLEVEL >= LOGLEVEL_ERROR
-#define logerror(fmt, args...)		_log(LOGLEVEL_ERROR, \
-						"[E] %s(%d): " fmt, \
-						__FUNCTION__, __LINE__, ## args)
-#else
-#define logerror(fmt, args...)
-#endif
-
-/* LOGWARN */
-#if MAX_LOGLEVEL >= LOGLEVEL_WARNING
-#define logwarn(fmt, args...)		_log(LOGLEVEL_WARNING, \
-						"[W] %s(%d): " fmt, \
-						__FUNCTION__, __LINE__, ## args)
-#else
-#define logwarn(fmt, args...)
-#endif
-
-/* LOGINFO */
-#if MAX_LOGLEVEL >= LOGLEVEL_INFO
-#define loginfo(fmt, args...)		_log(LOGLEVEL_INFO, \
-						"[I] %s(%d): " fmt, \
-						__FUNCTION__, __LINE__, ## args)
-#else
-#define loginfo(fmt, args...)
-#endif
-
-/* LOGDEBUG */
-#if MAX_LOGLEVEL >= LOGLEVEL_DEBUG
-#define logdebug(fmt, args...)		_log(LOGLEVEL_DEBUG, \
-						"[D] %s(%d): " fmt, \
-						__FUNCTION__, __LINE__, ## args)
-#else
-#define logdebug(fmt, args...)
-#endif
-
-/* LOGVERBOSE */
-#if MAX_LOGLEVEL >= LOGLEVEL_VERBOSE
-#define logverbose(fmt, args...)	_log(LOGLEVEL_VERBOSE, \
-						"[V] %s(%d): " fmt, \
-						__FUNCTION__, __LINE__, ## args)
-#else
-#define logverbose(fmt, args...)
-#endif
+#ifndef I__MATRIX_H__
+	#define I__MATRIX_H__
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-extern FILE *logfds[];
+/* Matrix of doubles */
+typedef struct matrix_dt {
+	uint32_t cols;
+	uint32_t rows;
+	double values[];
+} matrix_dt;
 
-void _log(int level, const char *fmt, ...) __printf_check(2, 3);
-void set_loglevel(int level);
+#define MATRIX_VAL(mp, row, col) ((mp)->values[(row) * (mp)->cols + (col)])
+
+/* Allocate and Free */
+matrix_dt *new_matrix_dt(uint32_t rows, uint32_t cols);
+void free_matrix_dt(matrix_dt *m);
+matrix_dt *copy_matrix_dt(const matrix_dt *A);
+void zero_matrix_dt(matrix_dt *A);
+
+/* Addition */
+matrix_dt *add_matrix_dt(const matrix_dt *A, const matrix_dt *B);
+
+/* Scalar Multiplication */
+matrix_dt *scalar_mult_matrix_dt(const matrix_dt *A, double S);
+
+/* Transpose */
+matrix_dt *transpose_matrix_dt(const matrix_dt *A);
+
+/* Matrix Multiplication */
+matrix_dt *mult_matrix_dt(const matrix_dt *A, const matrix_dt *B);
+
+/* Determinant */
+double determinant_dt(const matrix_dt *A);
+
+/* Cofactor */
+double cofactor_dt(const matrix_dt *A, uint32_t i, uint32_t j);
+
+/* Cofactor Matrix */
+matrix_dt *cofactor_matrix_dt(const matrix_dt *A);
+
+/* Matrix Inversion */
+matrix_dt *inverse_matrix_dt(const matrix_dt *A);
 
 #ifdef __cplusplus
 }
 #endif
-
-#endif /* I__LOGGING_H__ */
+#endif /* I__MATRIX_H__ */

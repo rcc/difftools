@@ -1,28 +1,40 @@
-# Output Name
-TARGET := difftools
+CONFIGS := debug release
 
 # Sources
-SOURCES :=	src/difftools.c \
+SOURCES :=	src/main.c \
+		src/prepost.c \
 		lib/logging.c \
 		lib/getline.c \
+		lib/dict.c \
 		lib/cmds.c \
 		src/colorize.c \
 		src/detab.c \
 		src/tohtml.c \
-
+		src/cmds/version.c \
 
 # Libraries
 LIBRARIES := readline
 
+# Version
+include buildsystem/git.mk
+OPTIONS += SCMVERSION='"$(SCMVERSION)"'
+OPTIONS += SCMBRANCH='"$(SCMBRANCH)"'
+CPPFLAGS += -DBUILD_DATE='"$(shell date)"'
+
+# Release
+ifeq ($(CONFIG),release)
 # Options
-OPTIONS := VERSION='"0.2"'
+OPTIONS += MAX_LOGLEVEL=3 DEFAULT_LOGLEVEL=2
+# Flags
+CFLAGS += -O2
+endif
 
-# Configurations (the first one is the default)
-CONFIGS := release debug
+# Config
+ifeq ($(CONFIG),debug)
+# Options
+OPTIONS += MAX_LOGLEVEL=5 DEFAULT_LOGLEVEL=4
+# Flags
+CFLAGS += -O0 -g
+endif
 
-# Configuration Specific Options
-RELEASE_OPTIONS := CONFIG_RELEASE
-RELEASE_OPTIONS += MAX_LOGLEVEL=3 DEFAULT_LOGLEVEL=2
-
-DEBUG_OPTIONS := CONFIG_DEBUG
-DEBUG_OPTIONS += MAX_LOGLEVEL=5 DEFAULT_LOGLEVEL=4
+INSTALL_SCRIPT = targets/install

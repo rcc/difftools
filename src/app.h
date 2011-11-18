@@ -31,34 +31,12 @@
  * official policies, either expressed or implied, of Robert C. Curtis.
  */
 
-#include <getline.h>
+#ifndef I__APP_H__
+	#define I__APP_H__
 
-ssize_t fgetline(FILE *fp, char *buf, size_t bufsz)
-{
-	size_t i = 0;
-	int c;
+struct appdata_priv {
+};
 
-	while(((c = getc(fp)) != EOF) && (i < (bufsz - 1))) {
-		if(((char)c != '\n') && ((char)c != '\r')) {
-			buf[i++] = (char)c;
-		} else {
-			/* check for a matching pair */
-			if((char)c == '\n') {
-				if((char)(c = getc(fp)) != '\r')
-					ungetc(c, fp);
-			} else if((char)c == '\r') {
-				if((char)(c = getc(fp)) != '\n')
-					ungetc(c, fp);
-			}
-			break;
-		}
-	}
+#define APPDATA		((struct appdata_priv *)appdata)
 
-	buf[i] = '\0'; /* NULL Terminate */
-
-	/* if its the end of the file, and there was no line, return -1 */
-	if((c == EOF) && !i)
-		return -1;
-
-	return (ssize_t)i;
-}
+#endif /* I__APP_H__ */

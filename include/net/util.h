@@ -31,34 +31,18 @@
  * official policies, either expressed or implied, of Robert C. Curtis.
  */
 
-#include <getline.h>
+#include <stdint.h>
+#include <netinet/in.h>
 
-ssize_t fgetline(FILE *fp, char *buf, size_t bufsz)
-{
-	size_t i = 0;
-	int c;
+#ifndef I__NETUTIL_H__
+	#define I__NETUTIL_H__
 
-	while(((c = getc(fp)) != EOF) && (i < (bufsz - 1))) {
-		if(((char)c != '\n') && ((char)c != '\r')) {
-			buf[i++] = (char)c;
-		} else {
-			/* check for a matching pair */
-			if((char)c == '\n') {
-				if((char)(c = getc(fp)) != '\r')
-					ungetc(c, fp);
-			} else if((char)c == '\r') {
-				if((char)(c = getc(fp)) != '\n')
-					ungetc(c, fp);
-			}
-			break;
-		}
-	}
+int sockaddr_by_hostname(struct sockaddr *addr, socklen_t *addr_len,
+		const char *name, uint32_t port);
 
-	buf[i] = '\0'; /* NULL Terminate */
+int sockaddr_port(struct sockaddr *addr);
 
-	/* if its the end of the file, and there was no line, return -1 */
-	if((c == EOF) && !i)
-		return -1;
+#define SOCKADDR_ADDR_STR_LEN	20	/* XXXX:XXXX:XXXX:XXXX\0 */
+char *sockaddr_addr_str(struct sockaddr *addr, char *str);
 
-	return (ssize_t)i;
-}
+#endif /* I__NETUTIL_H__ */
