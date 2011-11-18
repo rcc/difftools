@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU General Public License
  * along with difftools.  If not, see <http://www.gnu.org/licenses/>.
  */
-#include "difftools.h"
+#include "app.h"
 #include <cmds.h>
 #include <getline.h>
 

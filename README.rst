@@ -12,4 +12,4 @@ e.g. `ln -s difftools detab`
 Build
 -----
 
-Just run `make`
+Run `make difftools.release`
