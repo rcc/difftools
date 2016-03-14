@@ -30,12 +30,10 @@ CMDHANDLER(detab)
 	ssize_t l;
 	size_t i,j;
 	int tabstop = 4;
-	int ret = 0;
 
 	/* XXX put support for reading a file instead of stdin here */
 
 	if(argc >= 1) {
-		ret = 1;
 		tabstop = atoi(argv[0]);
 		if(tabstop < 1 || tabstop > 80)
 			tabstop = 4;
